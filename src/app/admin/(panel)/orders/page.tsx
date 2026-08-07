@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/admin-auth";
 import { getPaidOrders } from "@/lib/orders";
+import { getOrderingStatus } from "@/lib/ordering-window";
 import { formatCents, formatOrderNumber } from "@/lib/format";
 import { formatPickupTime } from "@/lib/pickup";
 
@@ -8,13 +9,16 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminOrdersPage() {
   await requireAdmin();
-  const orders = await getPaidOrders();
+  const { serviceDate, serviceDateLabel } = getOrderingStatus();
+  const orders = await getPaidOrders(serviceDate);
 
   return (
     <div>
       <div className="mb-6 flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Orders</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Orders for {serviceDateLabel}
+          </h1>
           <p className="text-sm text-zinc-500">
             {orders.length} paid {orders.length === 1 ? "order" : "orders"},
             sorted by pickup time.

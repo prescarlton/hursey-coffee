@@ -16,6 +16,7 @@ export type NewOrder = {
   kidName: string;
   teacherName: string;
   pickupTime: string;
+  serviceDate: string;
   totalCents: number;
   items: NewOrderItem[];
 };
@@ -30,6 +31,7 @@ export function createPendingOrder(input: NewOrder) {
       kidName: input.kidName,
       teacherName: input.teacherName,
       pickupTime: input.pickupTime,
+      serviceDate: input.serviceDate,
       totalCents: input.totalCents,
       status: OrderStatus.PENDING,
       items: { create: input.items },
@@ -37,10 +39,10 @@ export function createPendingOrder(input: NewOrder) {
   });
 }
 
-/** All paid orders with their items, ordered for the Friday pickup line. */
-export function getPaidOrders() {
+/** Paid orders for one Friday's batch, ordered for the pickup line. */
+export function getPaidOrders(serviceDate: string) {
   return prisma.order.findMany({
-    where: { status: OrderStatus.PAID },
+    where: { status: OrderStatus.PAID, serviceDate },
     include: { items: true },
     orderBy: [{ pickupTime: "asc" }, { orderNumber: "asc" }],
   });

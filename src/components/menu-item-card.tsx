@@ -8,9 +8,15 @@ export type MenuItemCardProps = {
   id: string;
   name: string;
   priceCents: number;
+  orderingOpen?: boolean;
 };
 
-export function MenuItemCard({ id, name, priceCents }: MenuItemCardProps) {
+export function MenuItemCard({
+  id,
+  name,
+  priceCents,
+  orderingOpen = true,
+}: MenuItemCardProps) {
   const { addItem } = useCart();
   const [added, setAdded] = useState(false);
 
@@ -35,9 +41,10 @@ export function MenuItemCard({ id, name, priceCents }: MenuItemCardProps) {
       <button
         type="button"
         onClick={handleAdd}
-        className="mt-4 h-10 rounded-full bg-amber-700 px-4 text-sm font-medium text-white transition-colors hover:bg-amber-800 disabled:opacity-70"
+        disabled={!orderingOpen}
+        className="mt-4 h-10 rounded-full bg-amber-700 px-4 text-sm font-medium text-white transition-colors hover:bg-amber-800 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {added ? "Added ✓" : "Add to cart"}
+        {!orderingOpen ? "Ordering closed" : added ? "Added ✓" : "Add to cart"}
       </button>
     </div>
   );

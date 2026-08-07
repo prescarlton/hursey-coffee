@@ -5,6 +5,7 @@ import { checkoutSchema, fieldErrors } from "@/lib/validation";
 import { getMenuItemsByIds } from "@/lib/menu";
 import { createPendingOrder, attachStripeSession } from "@/lib/orders";
 import { getStripe } from "@/lib/stripe";
+import { getOrderingStatus } from "@/lib/ordering-window";
 
 export type CheckoutState = {
   errors?: Record<string, string>;
@@ -14,6 +15,16 @@ export async function createCheckoutSession(
   _prevState: CheckoutState,
   formData: FormData,
 ): Promise<CheckoutState> {
+  // Authoritative gate: reject orders while ordering is closed for the week.
+  const status = getOrderingStatus();
+  if (!status.open) {
+    return {
+      errors: {
+        form: `Ordering is closed for this week. It reopens ${status.reopensLabel}.`,
+      },
+    };
+  }
+
   // The cart travels in a hidden JSON field; customer details are normal inputs.
   let cartRaw: unknown = [];
   try {
@@ -73,6 +84,7 @@ export async function createCheckoutSession(
     kidName,
     teacherName,
     pickupTime,
+    serviceDate: status.serviceDate,
     totalCents,
     items: lineItems.map((li) => ({
       menuItemId: li.item.id,

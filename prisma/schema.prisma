@@ -36,6 +36,8 @@ model Order {
   kidName               String
   teacherName           String
   pickupTime            String
+  /// The Friday this order is for, "YYYY-MM-DD" in the fundraiser timezone.
+  serviceDate           String
   status                OrderStatus @default(PENDING)
   totalCents            Int
   stripeSessionId       String?     @unique

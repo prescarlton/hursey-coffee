@@ -1,5 +1,6 @@
 import { requireAdmin } from "@/lib/admin-auth";
 import { getPaidOrders } from "@/lib/orders";
+import { getOrderingStatus } from "@/lib/ordering-window";
 import { formatCents, formatOrderNumber } from "@/lib/format";
 import { formatPickupTime } from "@/lib/pickup";
 import { PrintButton } from "@/components/admin/print-button";
@@ -8,7 +9,8 @@ export const dynamic = "force-dynamic";
 
 export default async function PrintOrdersPage() {
   await requireAdmin();
-  const orders = await getPaidOrders();
+  const { serviceDate, serviceDateLabel } = getOrderingStatus();
+  const orders = await getPaidOrders(serviceDate);
 
   const printedAt = new Date().toLocaleString("en-US", {
     dateStyle: "full",
@@ -26,7 +28,9 @@ export default async function PrintOrdersPage() {
       </div>
 
       <div className="mb-4">
-        <h1 className="text-xl font-bold">Hursey Coffee — Friday pickups</h1>
+        <h1 className="text-xl font-bold">
+          Hursey Coffee — {serviceDateLabel}
+        </h1>
         <p className="text-sm text-zinc-500 print:text-black">
           {orders.length} orders · printed {printedAt}
         </p>
