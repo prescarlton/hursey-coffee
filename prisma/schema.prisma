@@ -1,0 +1,72 @@
+// Coffee fundraiser ordering system — data model.
+// Prisma 7 uses the `prisma-client` generator; connection URL lives in prisma.config.ts.
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// A coffee (or other item) that can be ordered. The back-office edits the
+/// name and price; the storefront lists all items.
+model MenuItem {
+  id         String   @id @default(cuid())
+  name       String
+  priceCents Int
+  imageUrl   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  orderItems OrderItem[]
+}
+
+/// A single parent's order, paid for as one Stripe Checkout session.
+model Order {
+  id                    String      @id @default(cuid())
+  /// Short, human-readable pickup number parents reference at the car line
+  /// (distinct from the long Stripe session id). Sequence starts at 1001.
+  orderNumber           Int         @unique @default(autoincrement())
+  customerName          String
+  carColor              String
+  carType               String
+  kidName               String
+  teacherName           String
+  pickupTime            String
+  status                OrderStatus @default(PENDING)
+  totalCents            Int
+  stripeSessionId       String?     @unique
+  stripePaymentIntentId String?
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  items OrderItem[]
+}
+
+/// A line in an order. Name + unit price are snapshotted so historical orders stay
+/// correct even if the menu item is later renamed, repriced, or removed.
+model OrderItem {
+  id             String  @id @default(cuid())
+  orderId        String
+  menuItemId     String?
+  nameSnapshot   String
+  unitPriceCents Int
+  quantity       Int
+
+  order    Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  // Nullable + SetNull: deleting a menu item preserves order history (name/price
+  // are snapshotted above) by nulling this reference instead of blocking.
+  menuItem MenuItem? @relation(fields: [menuItemId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELLED
+  FULFILLED
+}
