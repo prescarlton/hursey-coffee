@@ -10,7 +10,10 @@ import {
 } from "@/lib/menu";
 
 function parseItem(formData: FormData): MenuItemInput {
-  const name = String(formData.get("name") ?? "").trim();
+  // Names may span multiple lines; normalize the CRLFs browsers submit.
+  const name = String(formData.get("name") ?? "")
+    .replace(/\r\n?/g, "\n")
+    .trim();
   const dollars = parseFloat(String(formData.get("price") ?? ""));
 
   return {

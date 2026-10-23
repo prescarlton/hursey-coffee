@@ -51,15 +51,16 @@ function MenuRow({ item }: { item: Item }) {
             await updateMenuItemAction(formData);
             setMode("view");
           }}
-          className="flex flex-col gap-3 sm:flex-row sm:items-center"
+          className="flex flex-col gap-3 sm:flex-row sm:items-start"
         >
           <input type="hidden" name="id" value={item.id} />
-          <input
+          <textarea
             name="name"
             defaultValue={item.name}
             required
-            aria-label="Drink name"
-            className={`${fieldClass} sm:flex-1`}
+            rows={2}
+            aria-label="Item name"
+            className={`${fieldClass} resize-y sm:flex-1`}
           />
           <div className="sm:w-32">
             <PriceField defaultValue={priceDollars} />
@@ -85,7 +86,8 @@ function MenuRow({ item }: { item: Item }) {
     return (
       <li className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between">
         <span className="text-lg">
-          Delete <span className="font-semibold">{item.name}</span>?
+          Delete{" "}
+          <span className="whitespace-pre-line font-semibold">{item.name}</span>?
         </span>
         <div className="flex gap-2">
           <form action={deleteMenuItemAction}>
@@ -111,7 +113,9 @@ function MenuRow({ item }: { item: Item }) {
 
   return (
     <li className="flex items-center gap-3 py-4">
-      <span className="flex-1 text-lg font-medium">☕ {item.name}</span>
+      <span className="flex-1 whitespace-pre-line text-lg font-medium">
+        ☕ {item.name}
+      </span>
       <span className="text-lg font-semibold tabular-nums text-amber-700 dark:text-amber-500">
         {formatCents(item.priceCents)}
       </span>
@@ -142,14 +146,15 @@ export function MenuManager({ items }: { items: Item[] }) {
         <h2 className="mb-4 text-lg font-semibold">Add a drink</h2>
         <form
           action={createMenuItemAction}
-          className="flex flex-col gap-3 sm:flex-row sm:items-center"
+          className="flex flex-col gap-3 sm:flex-row sm:items-start"
         >
-          <input
+          <textarea
             name="name"
             required
-            aria-label="Drink name"
-            placeholder="Drink name"
-            className={`${fieldClass} sm:flex-1`}
+            rows={2}
+            aria-label="Item name"
+            placeholder="Item name"
+            className={`${fieldClass} resize-y sm:flex-1`}
           />
           <div className="sm:w-32">
             <PriceField />

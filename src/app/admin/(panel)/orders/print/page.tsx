@@ -65,7 +65,7 @@ export default async function PrintOrdersPage() {
                 <td className="whitespace-nowrap py-1.5 pr-3">
                   {o.carColor} {o.carType}
                 </td>
-                <td className="py-1.5 pr-3">
+                <td className="whitespace-pre-line py-1.5 pr-3">
                   {o.items
                     .map((i) => `${i.quantity}× ${i.nameSnapshot}`)
                     .join(", ")}

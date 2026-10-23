@@ -63,7 +63,7 @@ export default async function AdminOrdersPage() {
                   <td className="whitespace-nowrap px-3 py-2">
                     {o.carColor} {o.carType}
                   </td>
-                  <td className="px-3 py-2">
+                  <td className="whitespace-pre-line px-3 py-2">
                     {o.items
                       .map((i) => `${i.quantity}× ${i.nameSnapshot}`)
                       .join(", ")}

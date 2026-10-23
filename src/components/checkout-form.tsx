@@ -60,7 +60,9 @@ export function CheckoutForm() {
               className="flex items-center justify-between gap-3 rounded-xl border border-black/10 bg-white p-3 dark:border-white/10 dark:bg-zinc-900"
             >
               <div className="min-w-0">
-                <p className="truncate font-medium">{item.name}</p>
+                <p className="whitespace-pre-line break-words font-medium">
+                  {item.name}
+                </p>
                 <p className="text-sm text-zinc-500">
                   {formatCents(item.priceCents)} each
                 </p>

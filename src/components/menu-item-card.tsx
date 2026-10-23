@@ -30,7 +30,7 @@ export function MenuItemCard({
     <div className="flex flex-col justify-between rounded-2xl border border-black/10 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-zinc-900">
       <div>
         <div className="flex items-start justify-between gap-3">
-          <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+          <h3 className="whitespace-pre-line text-lg font-semibold text-zinc-900 dark:text-zinc-50">
             {name}
           </h3>
           <span className="shrink-0 font-semibold text-amber-700 dark:text-amber-500">

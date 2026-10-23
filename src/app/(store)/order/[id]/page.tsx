@@ -93,7 +93,7 @@ export default async function OrderPage(props: PageProps<"/order/[id]">) {
               key={item.id}
               className="flex items-center justify-between py-2 text-sm"
             >
-              <span>
+              <span className="whitespace-pre-line">
                 <span className="font-medium tabular-nums">
                   {item.quantity}×
                 </span>{" "}
