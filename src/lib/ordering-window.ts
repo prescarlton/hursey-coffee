@@ -1,20 +1,17 @@
-// Weekly ordering window for the Friday-morning fundraiser.
+// Weekly ordering window. Orders are only accepted inside this window; the
+// checkout action enforces it and the storefront reflects it.
 //
-// Ordering is OPEN all week and CLOSES Thursday 10:00 PM. Coffee is served the
-// next morning (Friday 7:00–7:30 pickup), and ordering REOPENS Friday 3:00 PM
-// for the following Friday. So the closed window is Thu 22:00 → Fri 15:00,
-// which covers the Friday service.
-//
-// All times are wall-clock in FUNDRAISER_TIMEZONE (default America/New_York),
-// computed via Intl so it's correct regardless of the server's timezone.
+// To change when ordering is open, edit ORDERING_WINDOW below. Times are
+// wall-clock in FUNDRAISER_TIMEZONE (default America/New_York), computed via
+// Intl so they're correct regardless of the server's timezone.
+
+export const ORDERING_WINDOW = {
+  weekday: 5, // 0=Sun … 6=Sat (5 = Friday)
+  start: "06:45", // 24h local time, inclusive
+  end: "07:30", // 24h local time, exclusive (closed from 7:30:00 on)
+};
 
 const DEFAULT_TZ = "America/New_York";
-
-// Cutoff: Thursday 22:00. Reopen: Friday 15:00. (Weekday: Sun=0 … Sat=6.)
-const THURSDAY = 4;
-const FRIDAY = 5;
-const CUTOFF_MINUTES = 22 * 60; // Thu 10:00 PM
-const REOPEN_MINUTES = 15 * 60; // Fri 3:00 PM
 
 function timeZone(): string {
   return process.env.FUNDRAISER_TIMEZONE || DEFAULT_TZ;
@@ -75,65 +72,59 @@ function addDays(year: number, month: number, day: number, days: number): string
   return `${y}-${m}-${dd}`;
 }
 
-/** Format a "YYYY-MM-DD" as e.g. "Friday, August 8" in the fundraiser zone. */
-export function formatServiceDate(serviceDate: string): string {
+/** Format a "YYYY-MM-DD" as e.g. "Friday, October 24". */
+function formatDate(date: string): string {
   // Anchor at noon UTC so the calendar day can't shift under the timezone.
-  const d = new Date(`${serviceDate}T12:00:00Z`);
   return new Intl.DateTimeFormat("en-US", {
     timeZone: timeZone(),
     weekday: "long",
     month: "long",
     day: "numeric",
-  }).format(d);
+  }).format(new Date(`${date}T12:00:00Z`));
+}
+
+function toMinutes(hhmm: string): number {
+  const [h, m] = hhmm.split(":").map(Number);
+  return h * 60 + m;
+}
+
+/** "06:45" -> "6:45 AM". */
+function toLabel(hhmm: string): string {
+  const total = toMinutes(hhmm);
+  const h24 = Math.floor(total / 60);
+  const m = total % 60;
+  const period = h24 < 12 ? "AM" : "PM";
+  const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
+  return `${h12}:${String(m).padStart(2, "0")} ${period}`;
 }
 
 export type OrderingStatus = {
   open: boolean;
-  /** The Friday this cycle serves, "YYYY-MM-DD". */
-  serviceDate: string;
-  /** e.g. "Friday, August 8". */
-  serviceDateLabel: string;
-  /** When open: e.g. "Thursday, August 7 at 10:00 PM". */
+  /** When open: e.g. "7:30 AM". */
   closesLabel: string;
-  /** When closed: e.g. "Friday, August 8 at 3:00 PM". */
-  reopensLabel: string;
+  /** Next opening, e.g. "Friday, October 24 at 6:45 AM". */
+  opensLabel: string;
 };
-
-/**
- * The Friday whose batch is currently active — the batch a new order joins and
- * the batch the admin is preparing. Flips to next week only once Friday 3:00 PM
- * reopening passes.
- */
-function serviceDateFor(p: Parts): string {
-  let daysUntilFriday: number;
-  if (p.weekday === FRIDAY) {
-    daysUntilFriday = p.minutes >= REOPEN_MINUTES ? 7 : 0;
-  } else {
-    daysUntilFriday = (FRIDAY - p.weekday + 7) % 7;
-  }
-  return addDays(p.year, p.month, p.day, daysUntilFriday);
-}
 
 export function getOrderingStatus(now: Date = new Date()): OrderingStatus {
   const p = partsInZone(now);
+  const start = toMinutes(ORDERING_WINDOW.start);
+  const end = toMinutes(ORDERING_WINDOW.end);
 
-  const closed =
-    (p.weekday === THURSDAY && p.minutes >= CUTOFF_MINUTES) ||
-    (p.weekday === FRIDAY && p.minutes < REOPEN_MINUTES);
+  const open =
+    p.weekday === ORDERING_WINDOW.weekday &&
+    p.minutes >= start &&
+    p.minutes < end;
 
-  const serviceDate = serviceDateFor(p);
-
-  // The Thursday before this service Friday (cutoff) and the reopening Friday.
-  const thursdayBefore = addDays(
-    ...(serviceDate.split("-").map(Number) as [number, number, number]),
-    -1,
-  );
+  // Next opening: later today if the window hasn't started yet, otherwise the
+  // next matching weekday.
+  let daysUntil = (ORDERING_WINDOW.weekday - p.weekday + 7) % 7;
+  if (daysUntil === 0 && p.minutes >= start) daysUntil = 7;
+  const nextOpenDate = addDays(p.year, p.month, p.day, daysUntil);
 
   return {
-    open: !closed,
-    serviceDate,
-    serviceDateLabel: formatServiceDate(serviceDate),
-    closesLabel: `${formatServiceDate(thursdayBefore)} at 10:00 PM`,
-    reopensLabel: `${formatServiceDate(serviceDate)} at 3:00 PM`,
+    open,
+    closesLabel: toLabel(ORDERING_WINDOW.end),
+    opensLabel: `${formatDate(nextOpenDate)} at ${toLabel(ORDERING_WINDOW.start)}`,
   };
 }

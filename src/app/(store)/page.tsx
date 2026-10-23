@@ -15,8 +15,9 @@ export default async function Home() {
       <section className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Order Coffee</h1>
         <p className="mt-2 max-w-2xl text-zinc-600 dark:text-zinc-400">
-          Every cup supports our school fundraiser. Add drinks to your cart, then
-          check out — we&apos;ll bring your order right to your car at pickup.
+          {
+            "Every cup supports adolescent fundraising. Add items to your cart, then check out - we'll bring your order right out to your parking space."
+          }
         </p>
       </section>
 

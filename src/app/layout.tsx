@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Hursey Coffee — School Fundraiser",
-  description: "Order coffee to support our school fundraiser.",
+  title: "Bulldog Brews",
+  description: "Order coffee to support the adolescent fundraiser.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

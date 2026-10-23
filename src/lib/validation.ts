@@ -1,6 +1,11 @@
 import { z } from "zod";
-import { CAR_COLORS, CAR_TYPES } from "@/lib/cars";
-import { PICKUP_TIME_VALUES } from "@/lib/pickup";
+import { CAR_COLORS, CAR_TYPES, PARKING_SPACES } from "@/lib/cars";
+
+const parkingSpaceSchema = z.coerce
+  .number({ message: "Please choose your parking space" })
+  .refine((v) => (PARKING_SPACES as readonly number[]).includes(v), {
+    message: "Please choose your parking space",
+  });
 
 const carColorSchema = z
   .string()
@@ -23,15 +28,9 @@ export const cartItemSchema = z.object({
 /** Full checkout payload assembled from the form + hidden cart field. */
 export const checkoutSchema = z.object({
   customerName: z.string().trim().min(1, "Please enter your name"),
+  parkingSpace: parkingSpaceSchema,
   carColor: carColorSchema,
   carType: carTypeSchema,
-  kidName: z.string().trim().min(1, "Please enter your child's name"),
-  teacherName: z.string().trim().min(1, "Please enter the teacher's name"),
-  pickupTime: z
-    .string()
-    .refine((v) => PICKUP_TIME_VALUES.includes(v), {
-      message: "Please choose a pickup time",
-    }),
   cart: z.array(cartItemSchema).min(1, "Your cart is empty"),
 });
 

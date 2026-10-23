@@ -1,6 +1,5 @@
 import "server-only";
 import { prisma } from "@/lib/db";
-import { OrderStatus } from "@/generated/prisma/client";
 
 export type NewOrderItem = {
   menuItemId: string;
@@ -13,64 +12,37 @@ export type NewOrder = {
   customerName: string;
   carColor: string;
   carType: string;
-  kidName: string;
-  teacherName: string;
-  pickupTime: string;
-  serviceDate: string;
+  parkingSpace: number;
   totalCents: number;
   items: NewOrderItem[];
 };
 
-/** Create an order in PENDING status with its snapshotted line items. */
-export function createPendingOrder(input: NewOrder) {
+/** Create an order with its snapshotted line items. */
+export function createOrder(input: NewOrder) {
   return prisma.order.create({
     data: {
       customerName: input.customerName,
       carColor: input.carColor,
       carType: input.carType,
-      kidName: input.kidName,
-      teacherName: input.teacherName,
-      pickupTime: input.pickupTime,
-      serviceDate: input.serviceDate,
+      parkingSpace: input.parkingSpace,
       totalCents: input.totalCents,
-      status: OrderStatus.PENDING,
       items: { create: input.items },
     },
   });
 }
 
-/** Paid orders for one Friday's batch, ordered for the pickup line. */
-export function getPaidOrders(serviceDate: string) {
+/** All orders, newest first. */
+export function getOrders() {
   return prisma.order.findMany({
-    where: { status: OrderStatus.PAID, serviceDate },
     include: { items: true },
-    orderBy: [{ pickupTime: "asc" }, { orderNumber: "asc" }],
+    orderBy: { createdAt: "desc" },
   });
 }
 
-/** Load an order (with its line items) by its Stripe Checkout session id. */
-export function getOrderByStripeSession(stripeSessionId: string) {
+/** Load an order (with its line items) by id. */
+export function getOrderById(id: string) {
   return prisma.order.findUnique({
-    where: { stripeSessionId },
+    where: { id },
     include: { items: true },
-  });
-}
-
-/** Record the Stripe Checkout session id on an order. */
-export function attachStripeSession(orderId: string, stripeSessionId: string) {
-  return prisma.order.update({
-    where: { id: orderId },
-    data: { stripeSessionId },
-  });
-}
-
-/** Mark an order paid once Stripe confirms it via webhook. Idempotent. */
-export function markOrderPaid(
-  stripeSessionId: string,
-  stripePaymentIntentId: string | null,
-) {
-  return prisma.order.updateMany({
-    where: { stripeSessionId, status: OrderStatus.PENDING },
-    data: { status: OrderStatus.PAID, stripePaymentIntentId },
   });
 }

@@ -24,26 +24,21 @@ model MenuItem {
   orderItems OrderItem[]
 }
 
-/// A single parent's order, paid for as one Stripe Checkout session.
+/// A single parent's order. Payment happens off-site on RevTrak, so the app
+/// doesn't track whether it's been paid.
 model Order {
-  id                    String      @id @default(cuid())
-  /// Short, human-readable pickup number parents reference at the car line
-  /// (distinct from the long Stripe session id). Sequence starts at 1001.
-  orderNumber           Int         @unique @default(autoincrement())
-  customerName          String
-  carColor              String
-  carType               String
-  kidName               String
-  teacherName           String
-  pickupTime            String
-  /// The Friday this order is for, "YYYY-MM-DD" in the fundraiser timezone.
-  serviceDate           String
-  status                OrderStatus @default(PENDING)
-  totalCents            Int
-  stripeSessionId       String?     @unique
-  stripePaymentIntentId String?
-  createdAt             DateTime    @default(now())
-  updatedAt             DateTime    @updatedAt
+  id           String   @id @default(cuid())
+  /// Short, human-readable order number customers reference at handoff
+  /// (distinct from the long cuid). Sequence starts at 1001.
+  orderNumber  Int      @unique @default(autoincrement())
+  customerName String
+  carColor     String
+  carType      String
+  /// Numbered parking space (1–8) the customer is pulling into.
+  parkingSpace Int
+  totalCents   Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   items OrderItem[]
 }
@@ -64,11 +59,4 @@ model OrderItem {
   menuItem MenuItem? @relation(fields: [menuItemId], references: [id], onDelete: SetNull)
 
   @@index([orderId])
-}
-
-enum OrderStatus {
-  PENDING
-  PAID
-  CANCELLED
-  FULFILLED
 }

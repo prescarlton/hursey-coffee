@@ -4,7 +4,7 @@ import { getOrderingStatus } from "@/lib/ordering-window";
 
 export const dynamic = "force-dynamic";
 
-export default async function CheckoutPage() {
+export default function CheckoutPage() {
   const status = getOrderingStatus();
 
   return (
@@ -16,7 +16,7 @@ export default async function CheckoutPage() {
         <div className="rounded-xl border border-dashed border-black/15 p-10 text-center dark:border-white/15">
           <p className="text-lg font-semibold">Ordering is closed right now.</p>
           <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-            Orders for {status.serviceDateLabel} open {status.reopensLabel}.
+            Orders open {status.opensLabel}.
           </p>
           <Link
             href="/"

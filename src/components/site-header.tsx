@@ -10,7 +10,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-10 border-b border-black/10 bg-white/80 backdrop-blur dark:border-white/10 dark:bg-black/70">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
         <Link href="/" className="text-lg font-bold tracking-tight">
-          ☕ Hursey Coffee
+          ☕ Bulldog Brews
         </Link>
         <Link
           href="/checkout"

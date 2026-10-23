@@ -4,8 +4,8 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { useCart } from "@/components/cart-context";
 import { formatCents } from "@/lib/format";
-import { CAR_COLORS, CAR_TYPES } from "@/lib/cars";
-import { PICKUP_TIMES } from "@/lib/pickup";
+import { CAR_COLORS, CAR_TYPES, PARKING_SPACES } from "@/lib/cars";
+import { REVTRAK_FUNDRAISER_NAME } from "@/lib/payment";
 import {
   createCheckoutSession,
   type CheckoutState,
@@ -104,9 +104,9 @@ export function CheckoutForm() {
         <FieldError message={errors.cart} />
       </section>
 
-      {/* Pickup details + payment */}
+      {/* Customer details + payment */}
       <section className="lg:col-span-3">
-        <h2 className="mb-4 text-lg font-semibold">Pickup details</h2>
+        <h2 className="mb-4 text-lg font-semibold">Your details</h2>
         <form action={formAction} className="space-y-4">
           <input type="hidden" name="cart" value={cartPayload} />
 
@@ -125,12 +125,12 @@ export function CheckoutForm() {
           </div>
 
           <div>
-            <label htmlFor="pickupTime" className="mb-1 block text-sm font-medium">
-              Pickup time (this Friday)
+            <label htmlFor="parkingSpace" className="mb-1 block text-sm font-medium">
+              Parking space you&apos;re pulling into
             </label>
             <select
-              id="pickupTime"
-              name="pickupTime"
+              id="parkingSpace"
+              name="parkingSpace"
               required
               defaultValue=""
               className="w-full rounded-lg border border-black/15 bg-white px-3 py-2 dark:border-white/20 dark:bg-zinc-900"
@@ -138,13 +138,13 @@ export function CheckoutForm() {
               <option value="" disabled>
                 Select…
               </option>
-              {PICKUP_TIMES.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
+              {PARKING_SPACES.map((n) => (
+                <option key={n} value={n}>
+                  Space {n}
                 </option>
               ))}
             </select>
-            <FieldError message={errors.pickupTime} />
+            <FieldError message={errors.parkingSpace} />
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -195,34 +195,6 @@ export function CheckoutForm() {
             </div>
           </div>
 
-          <div>
-            <label htmlFor="kidName" className="mb-1 block text-sm font-medium">
-              Child&apos;s name
-            </label>
-            <input
-              id="kidName"
-              name="kidName"
-              type="text"
-              required
-              className="w-full rounded-lg border border-black/15 bg-white px-3 py-2 dark:border-white/20 dark:bg-zinc-900"
-            />
-            <FieldError message={errors.kidName} />
-          </div>
-
-          <div>
-            <label htmlFor="teacherName" className="mb-1 block text-sm font-medium">
-              Teacher&apos;s name
-            </label>
-            <input
-              id="teacherName"
-              name="teacherName"
-              type="text"
-              required
-              className="w-full rounded-lg border border-black/15 bg-white px-3 py-2 dark:border-white/20 dark:bg-zinc-900"
-            />
-            <FieldError message={errors.teacherName} />
-          </div>
-
           <FieldError message={errors.form} />
 
           <button
@@ -231,11 +203,12 @@ export function CheckoutForm() {
             className="h-12 w-full rounded-full bg-amber-700 px-6 font-medium text-white transition-colors hover:bg-amber-800 disabled:opacity-70"
           >
             {pending
-              ? "Redirecting to payment…"
-              : `Pay ${formatCents(totalCents)}`}
+              ? "Placing order…"
+              : `Place order · ${formatCents(totalCents)}`}
           </button>
           <p className="text-center text-xs text-zinc-500">
-            You&apos;ll complete payment securely on Stripe.
+            After placing your order you&apos;ll pay on RevTrak (select{" "}
+            {REVTRAK_FUNDRAISER_NAME}).
           </p>
         </form>
       </section>

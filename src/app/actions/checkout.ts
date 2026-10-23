@@ -3,8 +3,7 @@
 import { redirect } from "next/navigation";
 import { checkoutSchema, fieldErrors } from "@/lib/validation";
 import { getMenuItemsByIds } from "@/lib/menu";
-import { createPendingOrder, attachStripeSession } from "@/lib/orders";
-import { getStripe } from "@/lib/stripe";
+import { createOrder } from "@/lib/orders";
 import { getOrderingStatus } from "@/lib/ordering-window";
 
 export type CheckoutState = {
@@ -15,13 +14,11 @@ export async function createCheckoutSession(
   _prevState: CheckoutState,
   formData: FormData,
 ): Promise<CheckoutState> {
-  // Authoritative gate: reject orders while ordering is closed for the week.
+  // Authoritative gate: reject orders outside the ordering window.
   const status = getOrderingStatus();
   if (!status.open) {
     return {
-      errors: {
-        form: `Ordering is closed for this week. It reopens ${status.reopensLabel}.`,
-      },
+      errors: { form: `Ordering is closed. It opens ${status.opensLabel}.` },
     };
   }
 
@@ -35,11 +32,9 @@ export async function createCheckoutSession(
 
   const parsed = checkoutSchema.safeParse({
     customerName: formData.get("customerName"),
+    parkingSpace: formData.get("parkingSpace"),
     carColor: formData.get("carColor"),
     carType: formData.get("carType"),
-    kidName: formData.get("kidName"),
-    teacherName: formData.get("teacherName"),
-    pickupTime: formData.get("pickupTime"),
     cart: cartRaw,
   });
 
@@ -47,15 +42,7 @@ export async function createCheckoutSession(
     return { errors: fieldErrors(parsed.error) };
   }
 
-  const {
-    customerName,
-    carColor,
-    carType,
-    kidName,
-    teacherName,
-    pickupTime,
-    cart,
-  } = parsed.data;
+  const { customerName, parkingSpace, carColor, carType, cart } = parsed.data;
 
   // Re-derive authoritative prices from the DB — never trust client-side prices.
   const dbItems = await getMenuItemsByIds(cart.map((c) => c.menuItemId));
@@ -76,15 +63,12 @@ export async function createCheckoutSession(
     0,
   );
 
-  // Persist a PENDING order with price/name snapshots before sending to Stripe.
-  const order = await createPendingOrder({
+  // Persist the order with price/name snapshots; payment happens on RevTrak.
+  const order = await createOrder({
     customerName,
     carColor,
     carType,
-    kidName,
-    teacherName,
-    pickupTime,
-    serviceDate: status.serviceDate,
+    parkingSpace,
     totalCents,
     items: lineItems.map((li) => ({
       menuItemId: li.item.id,
@@ -94,41 +78,6 @@ export async function createCheckoutSession(
     })),
   });
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
-
-  let session: Awaited<
-    ReturnType<ReturnType<typeof getStripe>["checkout"]["sessions"]["create"]>
-  >;
-  try {
-    session = await getStripe().checkout.sessions.create({
-      mode: "payment",
-      line_items: lineItems.map((li) => ({
-        quantity: li.quantity,
-        price_data: {
-          currency: "usd",
-          unit_amount: li.item.priceCents,
-          product_data: { name: li.item.name },
-        },
-      })),
-      metadata: { orderId: order.id },
-      success_url: `${baseUrl}/order/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/order/cancelled`,
-    });
-  } catch (err) {
-    console.error("Stripe checkout session creation failed:", err);
-    return {
-      errors: {
-        form: "We couldn't start payment. Please try again in a moment.",
-      },
-    };
-  }
-
-  if (!session.url) {
-    return { errors: { form: "Could not start checkout. Please try again." } };
-  }
-
-  await attachStripeSession(order.id, session.id);
-
-  // Sends the parent to Stripe's hosted payment page (throws NEXT_REDIRECT).
-  redirect(session.url);
+  // Show the confirmation page with RevTrak payment instructions.
+  redirect(`/order/${order.id}`);
 }
