@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/components/cart-context";
 import { formatCents } from "@/lib/format";
@@ -29,6 +29,7 @@ export function CheckoutForm() {
     initialCheckoutState,
   );
   const errors = state.errors ?? {};
+  const [isTeacher, setIsTeacher] = useState(false);
 
   const cartPayload = JSON.stringify(
     items.map((i) => ({ menuItemId: i.menuItemId, quantity: i.quantity })),
@@ -126,37 +127,44 @@ export function CheckoutForm() {
             <FieldError message={errors.customerName} />
           </div>
 
-          <div>
-            <label htmlFor="parkingSpace" className="mb-1 block text-sm font-medium">
-              Parking space you&apos;re pulling into
-            </label>
-            <select
-              id="parkingSpace"
-              name="parkingSpace"
-              required
-              defaultValue=""
-              className="w-full rounded-lg border border-black/15 bg-white px-3 py-2 dark:border-white/20 dark:bg-zinc-900"
-            >
-              <option value="" disabled>
-                Select…
-              </option>
-              {PARKING_SPACES.map((n) => (
-                <option key={n} value={n}>
-                  Space {n}
-                </option>
-              ))}
-            </select>
-            <FieldError message={errors.parkingSpace} />
-          </div>
+          <label className="flex items-center gap-3 rounded-lg border border-black/15 bg-white px-3 py-2.5 dark:border-white/20 dark:bg-zinc-900">
+            <input
+              type="checkbox"
+              name="isTeacher"
+              checked={isTeacher}
+              onChange={(e) => setIsTeacher(e.target.checked)}
+              className="h-4 w-4 accent-amber-700"
+            />
+            <span className="text-sm font-medium">
+              I&apos;m a teacher / staff — bring it to my room
+            </span>
+          </label>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {isTeacher ? (
             <div>
-              <label htmlFor="carColor" className="mb-1 block text-sm font-medium">
-                Car color
+              <label htmlFor="teacherLocation" className="mb-1 block text-sm font-medium">
+                Your location
+              </label>
+              <input
+                id="teacherLocation"
+                name="teacherLocation"
+                type="text"
+                required
+                maxLength={100}
+                placeholder="e.g. Room 12, front office"
+                className="w-full rounded-lg border border-black/15 bg-white px-3 py-2 dark:border-white/20 dark:bg-zinc-900"
+              />
+              <FieldError message={errors.teacherLocation} />
+            </div>
+          ) : (
+            <>
+            <div>
+              <label htmlFor="parkingSpace" className="mb-1 block text-sm font-medium">
+                Parking space you&apos;re pulling into
               </label>
               <select
-                id="carColor"
-                name="carColor"
+                id="parkingSpace"
+                name="parkingSpace"
                 required
                 defaultValue=""
                 className="w-full rounded-lg border border-black/15 bg-white px-3 py-2 dark:border-white/20 dark:bg-zinc-900"
@@ -164,38 +172,64 @@ export function CheckoutForm() {
                 <option value="" disabled>
                   Select…
                 </option>
-                {CAR_COLORS.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
+                {PARKING_SPACES.map((n) => (
+                  <option key={n} value={n}>
+                    Space {n}
                   </option>
                 ))}
               </select>
-              <FieldError message={errors.carColor} />
+              <FieldError message={errors.parkingSpace} />
             </div>
 
-            <div>
-              <label htmlFor="carType" className="mb-1 block text-sm font-medium">
-                Car type
-              </label>
-              <select
-                id="carType"
-                name="carType"
-                required
-                defaultValue=""
-                className="w-full rounded-lg border border-black/15 bg-white px-3 py-2 dark:border-white/20 dark:bg-zinc-900"
-              >
-                <option value="" disabled>
-                  Select…
-                </option>
-                {CAR_TYPES.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label htmlFor="carColor" className="mb-1 block text-sm font-medium">
+                  Car color
+                </label>
+                <select
+                  id="carColor"
+                  name="carColor"
+                  required
+                  defaultValue=""
+                  className="w-full rounded-lg border border-black/15 bg-white px-3 py-2 dark:border-white/20 dark:bg-zinc-900"
+                >
+                  <option value="" disabled>
+                    Select…
                   </option>
-                ))}
-              </select>
-              <FieldError message={errors.carType} />
+                  {CAR_COLORS.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+                <FieldError message={errors.carColor} />
+              </div>
+
+              <div>
+                <label htmlFor="carType" className="mb-1 block text-sm font-medium">
+                  Car type
+                </label>
+                <select
+                  id="carType"
+                  name="carType"
+                  required
+                  defaultValue=""
+                  className="w-full rounded-lg border border-black/15 bg-white px-3 py-2 dark:border-white/20 dark:bg-zinc-900"
+                >
+                  <option value="" disabled>
+                    Select…
+                  </option>
+                  {CAR_TYPES.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+                <FieldError message={errors.carType} />
+              </div>
             </div>
-          </div>
+            </>
+          )}
 
           <FieldError message={errors.form} />
 

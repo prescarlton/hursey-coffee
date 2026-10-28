@@ -31,7 +31,9 @@ export async function createCheckoutSession(
   }
 
   const parsed = checkoutSchema.safeParse({
+    isTeacher: formData.get("isTeacher") === "on",
     customerName: formData.get("customerName"),
+    teacherLocation: formData.get("teacherLocation"),
     parkingSpace: formData.get("parkingSpace"),
     carColor: formData.get("carColor"),
     carType: formData.get("carType"),
@@ -42,7 +44,21 @@ export async function createCheckoutSession(
     return { errors: fieldErrors(parsed.error) };
   }
 
-  const { customerName, parkingSpace, carColor, carType, cart } = parsed.data;
+  const { customerName, cart } = parsed.data;
+  // Teachers get it delivered to their location; parents pick up curbside.
+  const handoff = parsed.data.isTeacher
+    ? {
+        teacherLocation: parsed.data.teacherLocation,
+        parkingSpace: null,
+        carColor: null,
+        carType: null,
+      }
+    : {
+        teacherLocation: null,
+        parkingSpace: parsed.data.parkingSpace,
+        carColor: parsed.data.carColor,
+        carType: parsed.data.carType,
+      };
 
   // Re-derive authoritative prices from the DB — never trust client-side prices.
   const dbItems = await getMenuItemsByIds(cart.map((c) => c.menuItemId));
@@ -66,9 +82,7 @@ export async function createCheckoutSession(
   // Persist the order with price/name snapshots; payment happens on RevTrak.
   const order = await createOrder({
     customerName,
-    carColor,
-    carType,
-    parkingSpace,
+    ...handoff,
     totalCents,
     items: lineItems.map((li) => ({
       menuItemId: li.item.id,

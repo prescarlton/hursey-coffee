@@ -1,6 +1,11 @@
 import { requireAdmin } from "@/lib/admin-auth";
 import { getOrders } from "@/lib/orders";
-import { formatCents, formatOrderNumber, formatOrderTime } from "@/lib/format";
+import {
+  formatCents,
+  formatHandoff,
+  formatOrderNumber,
+  formatOrderTime,
+} from "@/lib/format";
 import { PrintButton } from "@/components/admin/print-button";
 
 export const dynamic = "force-dynamic";
@@ -40,14 +45,16 @@ export default async function PrintOrdersPage() {
               <th className="py-1 pr-3">Order</th>
               <th className="py-1 pr-3">Placed</th>
               <th className="py-1 pr-3">Name</th>
-              <th className="py-1 pr-3">Space</th>
+              <th className="py-1 pr-3">Space / Location</th>
               <th className="py-1 pr-3">Car</th>
               <th className="py-1 pr-3">Items</th>
               <th className="py-1 text-right">Total</th>
             </tr>
           </thead>
           <tbody>
-            {orders.map((o) => (
+            {orders.map((o) => {
+              const handoff = formatHandoff(o);
+              return (
               <tr
                 key={o.id}
                 className="border-b border-black/30 print:border-black/40"
@@ -60,10 +67,13 @@ export default async function PrintOrdersPage() {
                 </td>
                 <td className="py-1.5 pr-3">{o.customerName}</td>
                 <td className="whitespace-nowrap py-1.5 pr-3 font-semibold tabular-nums">
-                  {o.parkingSpace}
+                  {handoff.isTeacher ? handoff.where : o.parkingSpace}
+                  {handoff.isTeacher && (
+                    <span className="ml-1 text-[10px] font-semibold uppercase">Teacher</span>
+                  )}
                 </td>
                 <td className="whitespace-nowrap py-1.5 pr-3">
-                  {o.carColor} {o.carType}
+                  {handoff.car}
                 </td>
                 <td className="whitespace-pre-line py-1.5 pr-3">
                   {o.items
@@ -74,7 +84,8 @@ export default async function PrintOrdersPage() {
                   {formatCents(o.totalCents)}
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       )}

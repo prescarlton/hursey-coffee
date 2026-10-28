@@ -25,14 +25,33 @@ export const cartItemSchema = z.object({
   quantity: z.number().int().positive().max(99),
 });
 
-/** Full checkout payload assembled from the form + hidden cart field. */
-export const checkoutSchema = z.object({
-  customerName: z.string().trim().min(1, "Please enter your name"),
-  parkingSpace: parkingSpaceSchema,
-  carColor: carColorSchema,
-  carType: carTypeSchema,
-  cart: z.array(cartItemSchema).min(1, "Your cart is empty"),
-});
+const customerNameSchema = z.string().trim().min(1, "Please enter your name");
+const cartSchema = z.array(cartItemSchema).min(1, "Your cart is empty");
+
+/**
+ * Full checkout payload assembled from the form + hidden cart field. Parents
+ * give a parking space + car for curbside pickup; teachers give a location.
+ */
+export const checkoutSchema = z.discriminatedUnion("isTeacher", [
+  z.object({
+    isTeacher: z.literal(false),
+    customerName: customerNameSchema,
+    parkingSpace: parkingSpaceSchema,
+    carColor: carColorSchema,
+    carType: carTypeSchema,
+    cart: cartSchema,
+  }),
+  z.object({
+    isTeacher: z.literal(true),
+    customerName: customerNameSchema,
+    teacherLocation: z
+      .string({ message: "Please enter where to bring your order" })
+      .trim()
+      .min(1, "Please enter where to bring your order")
+      .max(100, "Please keep your location short"),
+    cart: cartSchema,
+  }),
+]);
 
 export type CheckoutInput = z.infer<typeof checkoutSchema>;
 

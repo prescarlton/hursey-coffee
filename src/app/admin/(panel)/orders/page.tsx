@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/admin-auth";
 import { getOrders } from "@/lib/orders";
-import { formatCents, formatOrderNumber, formatOrderTime } from "@/lib/format";
+import {
+  formatCents,
+  formatHandoff,
+  formatOrderNumber,
+  formatOrderTime,
+} from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -41,14 +46,16 @@ export default async function AdminOrdersPage() {
                 <th className="px-3 py-2">Order</th>
                 <th className="px-3 py-2">Placed</th>
                 <th className="px-3 py-2">Name</th>
-                <th className="px-3 py-2">Space</th>
+                <th className="px-3 py-2">Space / Location</th>
                 <th className="px-3 py-2">Car</th>
                 <th className="px-3 py-2">Items</th>
                 <th className="px-3 py-2 text-right">Total</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-black/5 dark:divide-white/10">
-              {orders.map((o) => (
+              {orders.map((o) => {
+                const handoff = formatHandoff(o);
+                return (
                 <tr key={o.id}>
                   <td className="whitespace-nowrap px-3 py-2 font-medium tabular-nums">
                     {formatOrderNumber(o.orderNumber)}
@@ -58,10 +65,13 @@ export default async function AdminOrdersPage() {
                   </td>
                   <td className="px-3 py-2">{o.customerName}</td>
                   <td className="whitespace-nowrap px-3 py-2 font-medium tabular-nums">
-                    {o.parkingSpace}
+                    {handoff.isTeacher ? handoff.where : o.parkingSpace}
+                    {handoff.isTeacher && (
+                      <span className="ml-1.5 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800 dark:bg-amber-500/20 dark:text-amber-300">Teacher</span>
+                    )}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2">
-                    {o.carColor} {o.carType}
+                    {handoff.car}
                   </td>
                   <td className="whitespace-pre-line px-3 py-2">
                     {o.items
@@ -72,7 +82,8 @@ export default async function AdminOrdersPage() {
                     {formatCents(o.totalCents)}
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>

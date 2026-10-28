@@ -10,9 +10,10 @@ export type NewOrderItem = {
 
 export type NewOrder = {
   customerName: string;
-  carColor: string;
-  carType: string;
-  parkingSpace: number;
+  carColor: string | null;
+  carType: string | null;
+  parkingSpace: number | null;
+  teacherLocation: string | null;
   totalCents: number;
   items: NewOrderItem[];
 };
@@ -25,6 +26,7 @@ export function createOrder(input: NewOrder) {
       carColor: input.carColor,
       carType: input.carType,
       parkingSpace: input.parkingSpace,
+      teacherLocation: input.teacherLocation,
       totalCents: input.totalCents,
       items: { create: input.items },
     },

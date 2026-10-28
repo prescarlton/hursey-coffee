@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ClearCart } from "@/components/clear-cart";
 import { getOrderById } from "@/lib/orders";
-import { formatCents, formatOrderNumber } from "@/lib/format";
+import { formatCents, formatHandoff, formatOrderNumber } from "@/lib/format";
 import { REVTRAK_FUNDRAISER_NAME, REVTRAK_URL } from "@/lib/payment";
 
 export const dynamic = "force-dynamic";
@@ -22,6 +22,7 @@ export default async function OrderPage(props: PageProps<"/order/[id]">) {
   const { id } = await props.params;
   const order = await getOrderById(id);
   if (!order) notFound();
+  const handoff = formatHandoff(order);
 
   return (
     <div className="mx-auto max-w-xl px-6 py-12">
@@ -32,7 +33,10 @@ export default async function OrderPage(props: PageProps<"/order/[id]">) {
         <h1 className="mt-3 text-3xl font-bold tracking-tight">Order placed</h1>
         <p className="mt-2 text-zinc-600 dark:text-zinc-400">
           Thanks, {order.customerName.split(" ")[0]}! We&apos;ll bring your order
-          out to space {order.parkingSpace}.
+          {handoff.isTeacher
+            ? `to ${handoff.where}`
+            : `out to space ${order.parkingSpace}`}
+          .
         </p>
       </div>
 
@@ -71,14 +75,14 @@ export default async function OrderPage(props: PageProps<"/order/[id]">) {
         </h2>
         <dl className="grid grid-cols-2 gap-4">
           <DetailRow label="Name" value={order.customerName} />
-          <DetailRow
-            label="Parking space"
-            value={`Space ${order.parkingSpace}`}
-          />
-          <DetailRow
-            label="Vehicle"
-            value={`${order.carColor} ${order.carType}`}
-          />
+          {handoff.isTeacher ? (
+            <DetailRow label="Location" value={handoff.where} />
+          ) : (
+            <>
+              <DetailRow label="Parking space" value={handoff.where} />
+              <DetailRow label="Vehicle" value={handoff.car} />
+            </>
+          )}
         </dl>
       </div>
 

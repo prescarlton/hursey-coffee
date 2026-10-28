@@ -27,18 +27,22 @@ model MenuItem {
 /// A single parent's order. Payment happens off-site on RevTrak, so the app
 /// doesn't track whether it's been paid.
 model Order {
-  id           String   @id @default(cuid())
+  id              String   @id @default(cuid())
   /// Short, human-readable order number customers reference at handoff
   /// (distinct from the long cuid). Sequence starts at 1001.
-  orderNumber  Int      @unique @default(autoincrement())
-  customerName String
-  carColor     String
-  carType      String
-  /// Numbered parking space (1–8) the customer is pulling into.
-  parkingSpace Int
-  totalCents   Int
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  orderNumber     Int      @unique @default(autoincrement())
+  customerName    String
+  /// Car details + parking space (1–8) for curbside pickup. Null on teacher
+  /// orders, which are delivered to `teacherLocation` instead.
+  carColor        String?
+  carType         String?
+  parkingSpace    Int?
+  /// Where to deliver a teacher/staff order (e.g. "Room 12"). Non-null marks
+  /// the order as a teacher order.
+  teacherLocation String?
+  totalCents      Int
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   items OrderItem[]
 }
