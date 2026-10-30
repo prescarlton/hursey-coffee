@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 
 /** All menu items — shown on the storefront and managed in the back-office. */
 export function getMenuItems() {
-  return prisma.menuItem.findMany({ orderBy: { name: "asc" } });
+  return prisma.menuItem.findMany({ orderBy: { order: "asc" } });
 }
 
 /** Fetch specific menu items by id — used to re-price a cart server-side. */

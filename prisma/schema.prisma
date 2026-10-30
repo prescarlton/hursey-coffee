@@ -15,6 +15,7 @@ datasource db {
 /// name and price; the storefront lists all items.
 model MenuItem {
   id         String   @id @default(cuid())
+  order      Int      @default(0)
   name       String
   priceCents Int
   imageUrl   String?
