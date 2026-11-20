@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/components/cart-context";
 
@@ -9,8 +10,19 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-10 border-b border-black/10 bg-white/80 backdrop-blur dark:border-white/10 dark:bg-black/70">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-        <Link href="/" className="text-lg font-bold tracking-tight">
-          ☕ Bulldog Brews
+        <Link
+          href="/"
+          className="flex items-center gap-3 text-lg font-bold tracking-tight"
+        >
+          <Image
+            src="/hursey_logo.png"
+            alt=""
+            width={40}
+            height={40}
+            loading="eager"
+            className="rounded-full ring-1 ring-black/10 dark:ring-white/15"
+          />
+          Bulldog Brews
         </Link>
         <Link
           href="/checkout"

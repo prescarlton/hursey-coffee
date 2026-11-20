@@ -48,3 +48,11 @@ export function getOrderById(id: string) {
     include: { items: true },
   });
 }
+
+/** Check an order off as completed, or reopen it. */
+export function setOrderCompleted(id: string, completed: boolean) {
+  return prisma.order.update({
+    where: { id },
+    data: { completedAt: completed ? new Date() : null },
+  });
+}

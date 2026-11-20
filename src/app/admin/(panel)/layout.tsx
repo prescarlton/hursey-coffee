@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/admin-auth";
 import { logout } from "@/app/admin/actions";
@@ -19,8 +20,19 @@ export default async function AdminPanelLayout({
     <div className="min-h-screen">
       <header className="border-b border-black/10 bg-white dark:border-white/10 dark:bg-zinc-950 print:hidden">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-6 py-3">
-          <Link href="/admin/orders" className="font-bold tracking-tight">
-            ☕ Bulldog Brews · Admin
+          <Link
+            href="/admin/orders"
+            className="flex items-center gap-2.5 font-bold tracking-tight"
+          >
+            <Image
+              src="/hursey_logo.png"
+              alt=""
+              width={32}
+              height={32}
+              loading="eager"
+              className="rounded-full ring-1 ring-black/10 dark:ring-white/15"
+            />
+            Bulldog Brews · Admin
           </Link>
           <nav className="-mr-5 flex items-center gap-1">
             <Link href="/admin/orders" className={ghostButton}>

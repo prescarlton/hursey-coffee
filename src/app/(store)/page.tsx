@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { getMenuItems } from "@/lib/menu";
 import { getOrderingStatus } from "@/lib/ordering-window";
@@ -12,13 +13,23 @@ export default async function Home() {
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
-      <section className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Order Coffee</h1>
-        <p className="mt-2 max-w-2xl text-zinc-600 dark:text-zinc-400">
-          {
-            "Every cup supports adolescent fundraising. Add items to your cart, then check out - we'll bring your order right out to your parking space."
-          }
-        </p>
+      <section className="mb-8 flex flex-col gap-6 sm:flex-row sm:items-center">
+        <Image
+          src="/hursey_logo.png"
+          alt="Malcolm C. Hursey Montessori"
+          width={144}
+          height={144}
+          loading="eager"
+          className="size-28 shrink-0 rounded-full ring-1 ring-black/10 sm:size-36 dark:ring-white/15"
+        />
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Order Coffee</h1>
+          <p className="mt-2 max-w-2xl text-zinc-600 dark:text-zinc-400">
+            {
+              "Every cup supports adolescent fundraising. Add items to your cart, then check out - we'll bring your order right out to your parking space."
+            }
+          </p>
+        </div>
       </section>
 
       <div className="mb-8">

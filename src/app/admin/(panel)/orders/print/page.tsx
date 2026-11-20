@@ -12,7 +12,8 @@ export const dynamic = "force-dynamic";
 
 export default async function PrintOrdersPage() {
   await requireAdmin();
-  const orders = await getOrders();
+  // Completed orders have already been handed off; print only what's left.
+  const orders = (await getOrders()).filter((o) => !o.completedAt);
 
   const printedAt = new Date().toLocaleString("en-US", {
     dateStyle: "full",
@@ -23,8 +24,8 @@ export default async function PrintOrdersPage() {
     <div>
       <div className="mb-4 flex items-center justify-between gap-4 print:hidden">
         <p className="text-sm text-zinc-500">
-          {orders.length} {orders.length === 1 ? "order" : "orders"}, newest
-          first.
+          {orders.length} open {orders.length === 1 ? "order" : "orders"},
+          newest first.
         </p>
         <PrintButton />
       </div>
@@ -32,12 +33,12 @@ export default async function PrintOrdersPage() {
       <div className="mb-4">
         <h1 className="text-xl font-bold">Bulldog Brews — orders</h1>
         <p className="text-sm text-zinc-500 print:text-black">
-          {orders.length} orders · printed {printedAt}
+          {orders.length} open orders · printed {printedAt}
         </p>
       </div>
 
       {orders.length === 0 ? (
-        <p className="text-zinc-500">No orders to print.</p>
+        <p className="text-zinc-500">No open orders to print.</p>
       ) : (
         <table className="w-full border-collapse text-left text-sm">
           <thead>
